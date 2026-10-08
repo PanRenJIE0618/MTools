@@ -38,7 +38,7 @@ function createWindow(): void {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 
@@ -51,6 +51,12 @@ app.whenReady().then(() => {
 
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
+
+  const { loadExternalTools, saveExternalTools } = await import('./toolsStore')
+  const { launchExternal } = await import('./launchTool')
+  ipcMain.handle('tools:list', () => loadExternalTools())
+  ipcMain.handle('tools:save', (_event, tools) => saveExternalTools(tools))
+  ipcMain.handle('tools:launch', (_event, payload) => launchExternal(payload))
 
   createWindow()
 

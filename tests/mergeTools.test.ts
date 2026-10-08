@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { mergeTools } from '../src/renderer/src/registry/mergeTools'
-import type { Tool } from '../src/renderer/src/types/tool'
+import type { Tool } from '../src/shared/tool'
 
 const builtin: Tool[] = [{
   id: 'json', name: 'JSON', description: '', category: 'dev',

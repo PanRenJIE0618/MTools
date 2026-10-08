@@ -1,4 +1,4 @@
-import type { Tool } from '../types/tool'
+import type { Tool } from '../../../shared/tool'
 
 export function mergeTools(builtin: Tool[], external: Tool[]): Tool[] {
   const builtinIds = new Set(builtin.map(t => t.id))

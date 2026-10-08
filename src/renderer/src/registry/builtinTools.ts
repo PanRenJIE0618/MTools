@@ -1,4 +1,4 @@
-import type { Tool } from '../types/tool'
+import type { Tool } from '../../../shared/tool'
 
 export const builtinTools: Tool[] = [
   {
