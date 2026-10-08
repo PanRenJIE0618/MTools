@@ -2,6 +2,7 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import { assertSafeUrl } from './assertSafeUrl'
 
 function createWindow(): void {
   // Create the browser window.
@@ -23,7 +24,11 @@ function createWindow(): void {
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url)
+    try {
+      shell.openExternal(assertSafeUrl(details.url))
+    } catch {
+      // Ignore unsafe or unsupported URLs
+    }
     return { action: 'deny' }
   })
 
@@ -40,8 +45,7 @@ function createWindow(): void {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
-  // Set app user model id for windows
-  electronApp.setAppUserModelId('com.electron')
+  electronApp.setAppUserModelId('com.mtools.app')
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
@@ -53,11 +57,32 @@ app.whenReady().then(async () => {
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
 
-  const { loadExternalTools, saveExternalTools } = await import('./toolsStore')
+  const { loadExternalTools, saveExternalTools, assertValidExternalToolsPayload } =
+    await import('./toolsStore')
   const { launchExternal } = await import('./launchTool')
   ipcMain.handle('tools:list', () => loadExternalTools())
-  ipcMain.handle('tools:save', (_event, tools) => saveExternalTools(tools))
-  ipcMain.handle('tools:launch', (_event, payload) => launchExternal(payload))
+  ipcMain.handle('tools:save', async (_event, tools) => {
+    const validated = assertValidExternalToolsPayload(tools)
+    await saveExternalTools(validated)
+  })
+  ipcMain.handle('tools:launch', (_event, payload) => {
+    if (!payload || typeof payload !== 'object') {
+      return { ok: false, error: '无效的工具参数' }
+    }
+    const p = payload as Record<string, unknown>
+    const kind = p.kind
+    if (kind !== 'app' && kind !== 'script' && kind !== 'url') {
+      return { ok: false, error: '无效的工具类型' }
+    }
+    if (typeof p.target !== 'string' || !p.target.trim()) {
+      return { ok: false, error: '缺少目标路径或 URL' }
+    }
+    return launchExternal({
+      kind,
+      target: p.target.trim(),
+      args: typeof p.args === 'string' ? p.args : undefined
+    })
+  })
 
   createWindow()
 

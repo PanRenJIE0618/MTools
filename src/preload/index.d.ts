@@ -1,5 +1,4 @@
 import type { Tool } from '../shared/tool'
-import { ElectronAPI } from '@electron-toolkit/preload'
 
 export interface MtoolsAPI {
   listExternal(): Promise<Tool[]>
@@ -9,8 +8,6 @@ export interface MtoolsAPI {
 
 declare global {
   interface Window {
-    electron: ElectronAPI
-    api: unknown
     mtools: MtoolsAPI
   }
 }

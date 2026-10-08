@@ -1,6 +1,8 @@
 export type DiffLine = { type: 'same' | 'add' | 'del'; text: string }
 
 export function diffLines(a: string, b: string): DiffLine[] {
+  if (a === '' && b === '') return []
+
   const linesA = a.split('\n')
   const linesB = b.split('\n')
   const m = linesA.length

@@ -158,6 +158,17 @@ body {
   padding: 24px 0;
 }
 
+.tool-grid__refreshing {
+  color: var(--muted);
+  font-size: 12px;
+  margin: 0 0 8px;
+}
+
+.tool-grid-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
 .tool-card {
   background: var(--surface);
   border: 1px solid var(--border);

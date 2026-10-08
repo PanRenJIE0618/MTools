@@ -93,7 +93,8 @@ export default function HomePage(): React.JSX.Element {
     async (tool: Tool) => {
       if (!window.confirm('确定删除该外挂？')) return
       const next = externals.filter((t) => t.id !== tool.id)
-      await persist(next)
+      const ok = await persist(next)
+      if (!ok) return
     },
     [externals, persist]
   )
