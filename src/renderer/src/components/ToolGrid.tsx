@@ -1,4 +1,6 @@
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import type { Tool } from '../../../shared/tool'
+import { fadeIn, staggerGrid } from '../lib/motion'
 import ToolCard from './ToolCard'
 
 type ToolGridProps = {
@@ -16,20 +18,46 @@ export default function ToolGrid({
   onEdit,
   onDelete
 }: ToolGridProps): React.JSX.Element {
+  const reduceMotion = useReducedMotion()
+
   if (loading && tools.length === 0) {
     return <p className="tool-grid__loading">加载中…</p>
   }
   if (!loading && tools.length === 0) {
-    return <p className="tool-grid__empty">没有匹配的工具</p>
+    return (
+      <motion.p
+        className="tool-grid__empty"
+        variants={fadeIn}
+        initial={reduceMotion ? false : 'hidden'}
+        animate="show"
+      >
+        没有匹配的工具
+      </motion.p>
+    )
   }
+
   return (
     <div className="tool-grid-wrap">
-      {loading ? (
-        <p className="tool-grid__refreshing" aria-live="polite">
-          刷新中…
-        </p>
-      ) : null}
-      <div className="tool-grid">
+      <AnimatePresence>
+        {loading ? (
+          <motion.p
+            className="tool-grid__refreshing"
+            aria-live="polite"
+            initial={reduceMotion ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            刷新中…
+          </motion.p>
+        ) : null}
+      </AnimatePresence>
+      <motion.div
+        className="tool-grid"
+        variants={staggerGrid}
+        initial={reduceMotion ? false : 'hidden'}
+        animate="show"
+        key={tools.map((t) => t.id).join('|')}
+      >
         {tools.map((tool) => (
           <ToolCard
             key={tool.id}
@@ -39,7 +67,7 @@ export default function ToolGrid({
             onDelete={onDelete}
           />
         ))}
-      </div>
+      </motion.div>
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, session } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -82,6 +82,17 @@ app.whenReady().then(async () => {
       target: p.target.trim(),
       args: typeof p.args === 'string' ? p.args : undefined
     })
+  })
+
+  const { registerExtraIpc } = await import('./registerExtraIpc')
+  registerExtraIpc()
+
+  session.defaultSession.setPermissionRequestHandler((_wc, permission, callback) => {
+    if (permission === 'media' || permission === 'display-capture') {
+      callback(true)
+      return
+    }
+    callback(false)
   })
 
   createWindow()

@@ -1,4 +1,6 @@
+import { motion, useReducedMotion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
+import { fadeUp } from '../lib/motion'
 
 type ToolPageHeaderProps = {
   title: string
@@ -10,9 +12,15 @@ export default function ToolPageHeader({
   description
 }: ToolPageHeaderProps): React.JSX.Element {
   const navigate = useNavigate()
+  const reduceMotion = useReducedMotion()
 
   return (
-    <header className="tool-page-header">
+    <motion.header
+      className="tool-page-header"
+      variants={fadeUp}
+      initial={reduceMotion ? false : 'hidden'}
+      animate="show"
+    >
       <button
         type="button"
         className="tool-page-header__back"
@@ -22,6 +30,6 @@ export default function ToolPageHeader({
       </button>
       <h1 className="tool-page-header__title">{title}</h1>
       <p className="tool-page-header__desc">{description}</p>
-    </header>
+    </motion.header>
   )
 }

@@ -1,4 +1,6 @@
+import { motion, useReducedMotion } from 'framer-motion'
 import type { Tool, ToolKind } from '../../../shared/tool'
+import { cardItem, springSoft } from '../lib/motion'
 
 const KIND_LABELS: Record<ToolKind, string> = {
   builtin: '内置',
@@ -20,8 +22,17 @@ export default function ToolCard({
   onEdit,
   onDelete
 }: ToolCardProps): React.JSX.Element {
+  const reduceMotion = useReducedMotion()
+
   return (
-    <div className="tool-card">
+    <motion.div
+      className="tool-card"
+      variants={cardItem}
+      layout={!reduceMotion}
+      whileHover={reduceMotion ? undefined : { y: -3 }}
+      whileTap={reduceMotion ? undefined : { scale: 0.985 }}
+      transition={springSoft}
+    >
       <button type="button" className="tool-card__main" onClick={() => onClick(tool)}>
         <div className="tool-card__head">
           <h3 className="tool-card__name">{tool.name}</h3>
@@ -47,6 +58,6 @@ export default function ToolCard({
           </button>
         </div>
       )}
-    </div>
+    </motion.div>
   )
 }

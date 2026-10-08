@@ -1,6 +1,13 @@
 export type ToolKind = 'builtin' | 'app' | 'script' | 'url'
 
-export type ToolCategory = 'dev' | 'encode' | 'text' | 'external'
+export type ToolCategory =
+  | 'dev'
+  | 'encode'
+  | 'text'
+  | 'productivity'
+  | 'media'
+  | 'network'
+  | 'external'
 
 export interface Tool {
   id: string
