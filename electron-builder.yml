@@ -1,5 +1,5 @@
-appId: com.electron.app
-productName: electron-scaffold
+appId: com.mtools.app
+productName: MTools
 directories:
   buildResources: build
 files:
@@ -12,7 +12,7 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: electron-scaffold
+  executableName: mtools
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}

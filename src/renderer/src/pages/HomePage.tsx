@@ -9,7 +9,7 @@ import { toastBus } from '../lib/toastBus'
 import { useTools } from '../hooks/useTools'
 
 export default function HomePage(): React.JSX.Element {
-  const { tools, loading, launch, saveExternals } = useTools()
+  const { tools, loading, launch, saveExternals, error } = useTools()
   const { category } = useCategoryFilter()
   const [query, setQuery] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
@@ -33,9 +33,15 @@ export default function HomePage(): React.JSX.Element {
   const externals = useMemo(() => tools.filter((t) => !t.builtin), [tools])
 
   const persist = useCallback(
-    async (nextExternals: Tool[]) => {
-      await saveExternals(nextExternals)
-      toastBus.show('已保存')
+    async (nextExternals: Tool[]): Promise<boolean> => {
+      try {
+        await saveExternals(nextExternals)
+        toastBus.show('已保存')
+        return true
+      } catch {
+        toastBus.show('保存失败，请重试')
+        return false
+      }
     },
     [saveExternals]
   )
@@ -75,7 +81,8 @@ export default function HomePage(): React.JSX.Element {
       const next = exists
         ? externals.map((t) => (t.id === tool.id ? tool : t))
         : [...externals, tool]
-      await persist(next)
+      const ok = await persist(next)
+      if (!ok) return
       setModalOpen(false)
       setEditing(null)
     },
@@ -93,6 +100,11 @@ export default function HomePage(): React.JSX.Element {
 
   return (
     <div className="home-page">
+      {error ? (
+        <div className="home-page__error" role="alert">
+          {error}
+        </div>
+      ) : null}
       <div className="home-page__toolbar">
         <SearchBar value={query} onChange={setQuery} />
         <button type="button" className="btn-add-tool" onClick={handleAdd}>

@@ -16,9 +16,9 @@ export default function JsonTool(): React.JSX.Element {
     try {
       const parsed = JSON.parse(trimmed) as unknown
       setOutput(JSON.stringify(parsed, null, pretty ? 2 : undefined))
-    } catch (e) {
+    } catch {
       setOutput('')
-      setError(e instanceof Error ? e.message : 'JSON 解析失败')
+      setError('JSON 解析失败')
     }
   }, [input])
 
