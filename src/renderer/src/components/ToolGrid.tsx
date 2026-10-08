@@ -5,12 +5,16 @@ type ToolGridProps = {
   tools: Tool[]
   loading?: boolean
   onCardClick: (tool: Tool) => void
+  onEdit?: (tool: Tool) => void
+  onDelete?: (tool: Tool) => void
 }
 
 export default function ToolGrid({
   tools,
   loading,
-  onCardClick
+  onCardClick,
+  onEdit,
+  onDelete
 }: ToolGridProps): React.JSX.Element {
   if (loading) {
     return <p className="tool-grid__loading">加载中…</p>
@@ -21,7 +25,13 @@ export default function ToolGrid({
   return (
     <div className="tool-grid">
       {tools.map((tool) => (
-        <ToolCard key={tool.id} tool={tool} onClick={onCardClick} />
+        <ToolCard
+          key={tool.id}
+          tool={tool}
+          onClick={onCardClick}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
       ))}
     </div>
   )

@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { Tool } from '../../../shared/tool'
+import AddToolModal from '../components/AddToolModal'
 import SearchBar from '../components/SearchBar'
 import ToolGrid from '../components/ToolGrid'
 import { useCategoryFilter } from '../lib/categoryContext'
@@ -8,9 +9,11 @@ import { toastBus } from '../lib/toastBus'
 import { useTools } from '../hooks/useTools'
 
 export default function HomePage(): React.JSX.Element {
-  const { tools, loading, launch } = useTools()
+  const { tools, loading, launch, saveExternals } = useTools()
   const { category } = useCategoryFilter()
   const [query, setQuery] = useState('')
+  const [modalOpen, setModalOpen] = useState(false)
+  const [editing, setEditing] = useState<Tool | null>(null)
   const navigate = useNavigate()
 
   const filtered = useMemo(
@@ -25,6 +28,16 @@ export default function HomePage(): React.JSX.Element {
         return catOk && qOk
       }),
     [tools, category, query]
+  )
+
+  const externals = useMemo(() => tools.filter((t) => !t.builtin), [tools])
+
+  const persist = useCallback(
+    async (nextExternals: Tool[]) => {
+      await saveExternals(nextExternals)
+      toastBus.show('已保存')
+    },
+    [saveExternals]
   )
 
   const handleCardClick = useCallback(
@@ -42,8 +55,41 @@ export default function HomePage(): React.JSX.Element {
   )
 
   const handleAdd = useCallback(() => {
-    // Task 6: add-tool modal
+    setEditing(null)
+    setModalOpen(true)
   }, [])
+
+  const handleEdit = useCallback((tool: Tool) => {
+    setEditing(tool)
+    setModalOpen(true)
+  }, [])
+
+  const handleModalClose = useCallback(() => {
+    setModalOpen(false)
+    setEditing(null)
+  }, [])
+
+  const handleSave = useCallback(
+    async (tool: Tool) => {
+      const exists = externals.some((t) => t.id === tool.id)
+      const next = exists
+        ? externals.map((t) => (t.id === tool.id ? tool : t))
+        : [...externals, tool]
+      await persist(next)
+      setModalOpen(false)
+      setEditing(null)
+    },
+    [externals, persist]
+  )
+
+  const handleDelete = useCallback(
+    async (tool: Tool) => {
+      if (!window.confirm('确定删除该外挂？')) return
+      const next = externals.filter((t) => t.id !== tool.id)
+      await persist(next)
+    },
+    [externals, persist]
+  )
 
   return (
     <div className="home-page">
@@ -53,7 +99,19 @@ export default function HomePage(): React.JSX.Element {
           添加工具
         </button>
       </div>
-      <ToolGrid tools={filtered} loading={loading} onCardClick={handleCardClick} />
+      <ToolGrid
+        tools={filtered}
+        loading={loading}
+        onCardClick={handleCardClick}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
+      <AddToolModal
+        open={modalOpen}
+        initial={editing}
+        onClose={handleModalClose}
+        onSave={(tool) => void handleSave(tool)}
+      />
     </div>
   )
 }
