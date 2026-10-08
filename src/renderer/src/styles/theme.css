@@ -494,3 +494,140 @@ body {
   font-size: 13px;
   color: #c0392b;
 }
+
+.diff-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 720px) {
+  .diff-inputs {
+    grid-template-columns: 1fr;
+  }
+}
+
+.diff-result {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+  font-family: ui-monospace, monospace;
+  font-size: 13px;
+  max-height: 360px;
+  overflow: auto;
+}
+
+.diff-result__empty {
+  margin: 0;
+  padding: 12px;
+  font-size: 13px;
+  color: var(--text-muted, #888);
+}
+
+.diff-line {
+  display: flex;
+  gap: 8px;
+  padding: 2px 10px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.diff-line--add {
+  background: #e6f4ea;
+}
+
+.diff-line--del {
+  background: #fce8e6;
+}
+
+.diff-line--same {
+  background: #fff;
+}
+
+.diff-line__prefix {
+  flex-shrink: 0;
+  width: 1ch;
+  user-select: none;
+  opacity: 0.6;
+}
+
+.regex-flags {
+  border: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.regex-flags legend {
+  width: 100%;
+  margin-bottom: 4px;
+}
+
+.regex-flag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.regex-preview {
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+  font-family: ui-monospace, monospace;
+  font-size: 13px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  min-height: 4em;
+}
+
+.regex-highlight {
+  background: #fff3bf;
+  color: inherit;
+  padding: 0 1px;
+  border-radius: 2px;
+}
+
+.regex-matches {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+  max-height: 240px;
+  overflow: auto;
+}
+
+.regex-match {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: baseline;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.regex-match:last-child {
+  border-bottom: none;
+}
+
+.regex-match__index {
+  color: var(--text-muted, #888);
+  font-family: ui-monospace, monospace;
+}
+
+.regex-match__text {
+  font-family: ui-monospace, monospace;
+}
+
+.regex-match__groups {
+  font-size: 12px;
+  color: var(--text-muted, #888);
+}

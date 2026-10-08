@@ -6,6 +6,8 @@ import JsonTool from '../tools/json/JsonTool'
 import TimestampTool from '../tools/timestamp/TimestampTool'
 import UrlTool from '../tools/url/UrlTool'
 import UuidTool from '../tools/uuid/UuidTool'
+import DiffTool from '../tools/diff/DiffTool'
+import RegexTool from '../tools/regex/RegexTool'
 
 type ToolEntry = {
   title: string
@@ -43,6 +45,16 @@ const TOOL_MAP: Record<string, ToolEntry> = {
     title: 'UUID',
     description: '生成 UUID',
     Component: UuidTool
+  },
+  diff: {
+    title: '文本对比',
+    description: '对比两段文本差异',
+    Component: DiffTool
+  },
+  regex: {
+    title: '正则测试',
+    description: '测试正则表达式匹配',
+    Component: RegexTool
   }
 }
 
