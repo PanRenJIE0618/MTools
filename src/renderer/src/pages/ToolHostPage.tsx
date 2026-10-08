@@ -1,8 +1,11 @@
 import { Navigate, useParams } from 'react-router-dom'
 import ToolPageHeader from '../components/ToolPageHeader'
 import Base64Tool from '../tools/base64/Base64Tool'
+import HashTool from '../tools/hash/HashTool'
 import JsonTool from '../tools/json/JsonTool'
+import TimestampTool from '../tools/timestamp/TimestampTool'
 import UrlTool from '../tools/url/UrlTool'
+import UuidTool from '../tools/uuid/UuidTool'
 
 type ToolEntry = {
   title: string
@@ -25,6 +28,21 @@ const TOOL_MAP: Record<string, ToolEntry> = {
     title: 'URL 编解码',
     description: 'URL 编码与解码',
     Component: UrlTool
+  },
+  timestamp: {
+    title: '时间戳',
+    description: '时间戳与日期互转',
+    Component: TimestampTool
+  },
+  hash: {
+    title: 'Hash',
+    description: '计算常见哈希值',
+    Component: HashTool
+  },
+  uuid: {
+    title: 'UUID',
+    description: '生成 UUID',
+    Component: UuidTool
   }
 }
 

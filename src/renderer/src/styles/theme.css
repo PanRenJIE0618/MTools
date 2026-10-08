@@ -435,6 +435,25 @@ body {
   background: var(--bg);
 }
 
+.tool-select,
+.tool-input {
+  width: 100%;
+  max-width: 280px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  font-size: 14px;
+  color: var(--text);
+  outline: none;
+  box-sizing: border-box;
+}
+
+.tool-select:focus,
+.tool-input:focus {
+  border-color: var(--accent);
+}
+
 .tool-actions {
   display: flex;
   flex-wrap: wrap;
