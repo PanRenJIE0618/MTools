@@ -207,7 +207,7 @@ export const builtinTools: Tool[] = [
   {
     id: 'screenshot',
     name: '截图',
-    description: '屏幕 / 窗口截图保存',
+    description: '屏幕 / 窗口截图与标注编辑',
     category: 'media',
     kind: 'builtin',
     route: '/tools/screenshot',

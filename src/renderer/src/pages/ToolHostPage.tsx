@@ -64,7 +64,7 @@ const TOOL_MAP: Record<string, ToolEntry> = {
   markdown: { title: 'Markdown 笔记', description: '笔记与预览', Component: MarkdownTool },
   translate: { title: '翻译', description: '在线文本翻译', Component: TranslateTool },
   rename: { title: '批量重命名', description: '按规则重命名', Component: RenameTool },
-  screenshot: { title: '截图', description: '屏幕截图保存', Component: ScreenshotTool },
+  screenshot: { title: '截图', description: '截图后标注编辑并保存', Component: ScreenshotTool },
   recorder: { title: '录屏', description: '录制屏幕', Component: RecorderTool },
   imagebatch: { title: '图片批量处理', description: '批量缩放转换', Component: ImageBatchTool },
   videobatch: { title: '视频批量处理', description: 'ffmpeg 批量转码', Component: VideoBatchTool },

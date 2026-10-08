@@ -1,10 +1,10 @@
-import { app, ipcMain } from 'electron'
-import { join } from 'node:path'
+import { ipcMain } from 'electron'
 import {
   clearClipboardHistory,
   getClipboardHistory,
   pollClipboard,
-  writeClipboard
+  writeClipboard,
+  writeClipboardImage
 } from './clipboardService'
 import {
   applyRename,
@@ -22,7 +22,7 @@ import {
 import { readJsonFile, userDataPath, writeJsonFile } from './jsonStore'
 import { lanStatus, listLanFiles, startLanServer, stopLanServer } from './lanServer'
 import { httpLatency, listLocalAddresses, resolveHost, translateText } from './networkService'
-import { captureScreenPng, listScreenSources } from './screenshotService'
+import { captureScreenDataUrl, listScreenSources } from './screenshotService'
 
 export function registerExtraIpc(): void {
   setInterval(() => {
@@ -37,6 +37,10 @@ export function registerExtraIpc(): void {
     if (typeof text !== 'string') return { ok: false }
     writeClipboard(text)
     return { ok: true }
+  })
+  ipcMain.handle('clip:writeImage', (_e, dataUrl: unknown) => {
+    if (typeof dataUrl !== 'string') return { ok: false, error: '无效参数' }
+    return writeClipboardImage(dataUrl)
   })
   ipcMain.handle('clip:clear', () => {
     clearClipboardHistory()
@@ -81,14 +85,9 @@ export function registerExtraIpc(): void {
   })
 
   ipcMain.handle('screen:list', () => listScreenSources())
-  ipcMain.handle('screen:capture', async (_e, sourceId: unknown) => {
+  ipcMain.handle('screen:capture', (_e, sourceId: unknown) => {
     const id = typeof sourceId === 'string' ? sourceId : ''
-    const defaultPath = join(
-      app.getPath('pictures'),
-      `mtools-shot-${Date.now()}.png`
-    )
-    const savePath = (await pickSavePath(defaultPath)) ?? defaultPath
-    return captureScreenPng(id, savePath)
+    return captureScreenDataUrl(id)
   })
 
   ipcMain.handle('net:addresses', () => listLocalAddresses())

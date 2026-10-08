@@ -21,6 +21,24 @@ export async function listScreenSources(): Promise<ScreenSource[]> {
   }))
 }
 
+export async function captureScreenDataUrl(
+  sourceId: string
+): Promise<{ ok: boolean; error?: string; dataUrl?: string }> {
+  try {
+    const sources = await desktopCapturer.getSources({
+      types: ['screen', 'window'],
+      thumbnailSize: { width: 2560, height: 1440 }
+    })
+    const source = sources.find((s) => s.id === sourceId) ?? sources[0]
+    if (!source || source.thumbnail.isEmpty()) {
+      return { ok: false, error: '无法获取屏幕画面' }
+    }
+    return { ok: true, dataUrl: source.thumbnail.toDataURL() }
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : String(e) }
+  }
+}
+
 export async function captureScreenPng(
   sourceId: string,
   savePath: string

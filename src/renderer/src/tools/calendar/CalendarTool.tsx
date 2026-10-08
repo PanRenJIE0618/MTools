@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toastBus } from '../../lib/toastBus'
+import {
+  createTodo,
+  loadTodos,
+  saveTodos,
+  todoOnDate,
+  type Todo
+} from '../../lib/todos'
 
 const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六']
 
@@ -41,16 +48,64 @@ export default function CalendarTool(): React.JSX.Element {
     return { year: d.getFullYear(), month: d.getMonth() }
   })
   const [selected, setSelected] = useState(() => new Date())
+  const [todos, setTodos] = useState<Todo[]>([])
+  const [modalOpen, setModalOpen] = useState(false)
+  const [draft, setDraft] = useState('')
+  const [modalError, setModalError] = useState('')
 
   useEffect(() => {
     const id = window.setInterval(() => setNow(new Date()), 1000)
     return () => window.clearInterval(id)
   }, [])
 
+  const refreshTodos = useCallback(async () => {
+    setTodos(await loadTodos())
+  }, [])
+
+  useEffect(() => {
+    void refreshTodos()
+  }, [refreshTodos])
+
+  // 回到日历页时刷新，便于与待办工具同步
+  useEffect(() => {
+    const onFocus = () => {
+      void refreshTodos()
+    }
+    window.addEventListener('focus', onFocus)
+    return () => window.removeEventListener('focus', onFocus)
+  }, [refreshTodos])
+
   const cells = useMemo(
     () => buildCells(cursor.year, cursor.month),
     [cursor.month, cursor.year]
   )
+
+  const selectedIso = formatDate(selected)
+
+  const dayTodos = useMemo(() => {
+    // 未完成在前，同组内按添加时间倒序（反向）
+    return todos
+      .filter((t) => todoOnDate(t, selectedIso))
+      .sort((a, b) => {
+        if (a.done !== b.done) return a.done ? 1 : -1
+        return b.id.localeCompare(a.id)
+      })
+  }, [selectedIso, todos])
+
+  const todoCountByDay = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const t of todos) {
+      // 覆盖本月可见日期即可
+      for (const cell of cells) {
+        if (!cell) continue
+        const iso = formatDate(cell)
+        if (todoOnDate(t, iso)) {
+          map.set(iso, (map.get(iso) ?? 0) + 1)
+        }
+      }
+    }
+    return map
+  }, [cells, todos])
 
   const shiftMonth = useCallback((delta: number) => {
     setCursor((c) => {
@@ -86,6 +141,56 @@ export default function CalendarTool(): React.JSX.Element {
     const start = new Date(selected.getFullYear(), 0, 0)
     return Math.floor((selected.getTime() - start.getTime()) / 86400000)
   }, [selected])
+
+  const openAddModal = useCallback(() => {
+    setDraft('')
+    setModalError('')
+    setModalOpen(true)
+  }, [])
+
+  const closeModal = useCallback(() => {
+    setModalOpen(false)
+    setDraft('')
+    setModalError('')
+  }, [])
+
+  useEffect(() => {
+    if (!modalOpen) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeModal()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [closeModal, modalOpen])
+
+  const confirmAddTodo = useCallback(async () => {
+    const text = draft.trim()
+    if (!text) {
+      setModalError('请填写待办内容')
+      return
+    }
+    const next = [createTodo(text, selectedIso), ...todos]
+    setTodos(next)
+    await saveTodos(next)
+    toastBus.show('已添加待办')
+    closeModal()
+  }, [closeModal, draft, selectedIso, todos])
+
+  const toggleTodo = useCallback(
+    async (id: string) => {
+      const next = todos.map((x) => {
+        if (x.id !== id) return x
+        const done = !x.done
+        if (done && !x.endDate) {
+          return { ...x, done, endDate: selectedIso }
+        }
+        return { ...x, done }
+      })
+      setTodos(next)
+      await saveTodos(next)
+    },
+    [selectedIso, todos]
+  )
 
   return (
     <div className="tool-panel cal-layout">
@@ -140,20 +245,28 @@ export default function CalendarTool(): React.JSX.Element {
             }
             const isToday = sameDay(day, now)
             const isSelected = sameDay(day, selected)
+            const iso = formatDate(day)
+            const count = todoCountByDay.get(iso) ?? 0
             return (
               <button
-                key={day.toISOString()}
+                key={iso}
                 type="button"
                 className={[
                   'cal-grid__cell',
                   isToday ? 'cal-grid__cell--today' : '',
-                  isSelected ? 'cal-grid__cell--selected' : ''
+                  isSelected ? 'cal-grid__cell--selected' : '',
+                  count > 0 ? 'cal-grid__cell--has-todo' : ''
                 ]
                   .filter(Boolean)
                   .join(' ')}
                 onClick={() => setSelected(day)}
               >
-                {day.getDate()}
+                <span className="cal-grid__day">{day.getDate()}</span>
+                {count > 0 ? (
+                  <span className="cal-grid__dots" aria-label={`${count} 条待办`}>
+                    {Math.min(count, 3)}
+                  </span>
+                ) : null}
               </button>
             )
           })}
@@ -165,7 +278,7 @@ export default function CalendarTool(): React.JSX.Element {
         <dl className="cal-detail__list">
           <div>
             <dt>日期</dt>
-            <dd>{formatDate(selected)}</dd>
+            <dd>{selectedIso}</dd>
           </div>
           <div>
             <dt>星期</dt>
@@ -193,10 +306,13 @@ export default function CalendarTool(): React.JSX.Element {
           </div>
         </dl>
         <div className="tool-actions">
+          <button type="button" className="tool-btn tool-btn--primary" onClick={openAddModal}>
+            添加待办
+          </button>
           <button
             type="button"
-            className="tool-btn tool-btn--primary"
-            onClick={() => void copyText(formatDate(selected))}
+            className="tool-btn"
+            onClick={() => void copyText(selectedIso)}
           >
             复制日期
           </button>
@@ -220,7 +336,86 @@ export default function CalendarTool(): React.JSX.Element {
             复制当日时间戳
           </button>
         </div>
+
+        <div className="cal-todos">
+          <h4 className="cal-todos__title">当日待办（{dayTodos.length}）</h4>
+          {dayTodos.length === 0 ? (
+            <p className="cal-todos__empty">这一天还没有待办</p>
+          ) : (
+            <ul className="cal-todos__list">
+              {dayTodos.map((item) => (
+                <li
+                  key={item.id}
+                  className={
+                    item.done ? 'cal-todos__item cal-todos__item--done' : 'cal-todos__item'
+                  }
+                >
+                  <label className="cal-todos__label">
+                    <input
+                      type="checkbox"
+                      checked={item.done}
+                      onChange={() => void toggleTodo(item.id)}
+                    />
+                    <span>{item.text}</span>
+                  </label>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
+
+      {modalOpen ? (
+        <div
+          className="modal-overlay"
+          role="presentation"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) closeModal()
+          }}
+        >
+          <div
+            className="modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="cal-todo-modal-title"
+          >
+            <h2 id="cal-todo-modal-title" className="modal__title">
+              添加待办 · {selectedIso}
+            </h2>
+            <form
+              className="modal__form"
+              onSubmit={(e) => {
+                e.preventDefault()
+                void confirmAddTodo()
+              }}
+            >
+              <label className="modal__field">
+                <span className="modal__label">待办事项</span>
+                <input
+                  className="modal__input"
+                  value={draft}
+                  autoFocus
+                  placeholder="输入待办内容…"
+                  onChange={(e) => setDraft(e.target.value)}
+                />
+              </label>
+              {modalError ? <p className="modal__error">{modalError}</p> : null}
+              <div className="modal__actions">
+                <button
+                  type="button"
+                  className="modal__btn modal__btn--ghost"
+                  onClick={closeModal}
+                >
+                  取消
+                </button>
+                <button type="submit" className="modal__btn modal__btn--primary">
+                  确认
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

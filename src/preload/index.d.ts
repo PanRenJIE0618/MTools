@@ -11,6 +11,7 @@ export interface MtoolsAPI {
 
   clipHistory(): Promise<ClipboardItem[]>
   clipWrite(text: string): Promise<{ ok: boolean }>
+  clipWriteImage(dataUrl: string): Promise<{ ok: boolean; error?: string }>
   clipClear(): Promise<{ ok: boolean }>
 
   pickFiles(filters?: { name: string; extensions: string[] }[]): Promise<string[]>
@@ -36,7 +37,7 @@ export interface MtoolsAPI {
   writeBinary(filePath: string, data: Uint8Array): Promise<{ ok: boolean; error?: string }>
 
   screenList(): Promise<ScreenSource[]>
-  screenCapture(sourceId: string): Promise<{ ok: boolean; error?: string; path?: string }>
+  screenCapture(sourceId: string): Promise<{ ok: boolean; error?: string; dataUrl?: string }>
 
   netAddresses(): Promise<NetAddress[]>
   netDns(host: string): Promise<{ ok: boolean; address?: string; error?: string }>

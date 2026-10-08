@@ -7,6 +7,7 @@ const mtools = {
 
   clipHistory: () => ipcRenderer.invoke('clip:history'),
   clipWrite: (text: string) => ipcRenderer.invoke('clip:write', text),
+  clipWriteImage: (dataUrl: string) => ipcRenderer.invoke('clip:writeImage', dataUrl),
   clipClear: () => ipcRenderer.invoke('clip:clear'),
 
   pickFiles: (filters?: unknown) => ipcRenderer.invoke('files:pick', filters),
